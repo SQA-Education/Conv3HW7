@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conversation Class · Week 4 · Class 7 — Mastering Workplace Clarity</title>
+<style>
+  :root{
+    --purple:#5b2c91; --purple-dark:#3d1d63; --purple-light:#7e4cc4;
+    --lilac:#f3edfb; --lilac-mid:#e4d6f7; --gold:#f5b921;
+    --ink:#2b2440; --muted:#6b6480; --good:#1f9d57; --bad:#d64545;
+    --card:#ffffff; --line:#e0d4f0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    background:linear-gradient(150deg,#ede4fb 0%,#f7f3fc 55%,#fdf6e9 100%);
+    color:var(--ink);min-height:100vh;padding:24px 14px;line-height:1.6;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+  .card{
+    background:var(--card);border-radius:20px;padding:32px 30px;
+    box-shadow:0 14px 40px rgba(61,29,99,.14);border:1px solid var(--line);
+  }
+  .screen{display:none;}
+  .screen.active{display:block;animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  .brand{font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--purple-light);font-weight:700;margin-bottom:6px;}
+  h1{font-size:1.6rem;color:var(--purple-dark);line-height:1.25;margin-bottom:4px;}
+  .sub{color:var(--muted);font-size:.95rem;margin-bottom:22px;}
+  h2{font-size:1.15rem;color:var(--purple-dark);margin-bottom:4px;
+    display:flex;align-items:center;gap:9px;}
+  .tag{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;
+    background:var(--lilac-mid);color:var(--purple);padding:3px 9px;
+    border-radius:20px;font-weight:700;}
+  .intro-note{color:var(--muted);font-size:.9rem;margin:8px 0 18px;}
+
+  .progress{display:flex;gap:6px;margin-bottom:22px;}
+  .progress span{flex:1;height:7px;border-radius:6px;background:var(--lilac-mid);}
+  .progress span.done{background:var(--purple-light);}
+  .progress span.now{background:var(--gold);}
+
+  .passage{background:var(--lilac);border-left:4px solid var(--purple-light);
+    border-radius:0 12px 12px 0;padding:16px 18px;margin:14px 0 20px;font-size:.96rem;}
+  .passage h3{color:var(--purple-dark);font-size:1.02rem;margin-bottom:8px;}
+  .passage .dateline{font-size:.78rem;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--purple-light);font-weight:700;margin-bottom:6px;}
+  .passage p{margin-bottom:10px;}
+  .passage .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.86rem;
+    background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px 14px;
+    line-height:1.7;white-space:pre-wrap;margin-bottom:10px;}
+
+  .videobox{position:relative;width:100%;padding-top:56.25%;border-radius:13px;
+    overflow:hidden;background:#000;margin:14px 0 8px;border:1px solid var(--line);}
+  .videobox iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0;}
+  .videolink{display:inline-block;font-size:.86rem;color:var(--purple);
+    font-weight:700;text-decoration:underline;margin-bottom:18px;}
+
+  .q{margin:18px 0;padding-bottom:6px;}
+  .q .qtext{font-weight:600;margin-bottom:10px;}
+  .opt{display:block;border:1.6px solid var(--line);border-radius:11px;
+    padding:11px 14px;margin:7px 0;cursor:pointer;transition:.15s;font-size:.94rem;}
+  .opt:hover{border-color:var(--purple-light);background:var(--lilac);}
+  .opt.sel{border-color:var(--purple);background:var(--lilac-mid);font-weight:600;}
+  .opt.correct{border-color:var(--good);background:#e5f6ec;}
+  .opt.wrong{border-color:var(--bad);background:#fbe7e7;}
+  .opt input{margin-right:9px;}
+
+  .gap{margin:14px 0;font-size:.96rem;}
+  .gap label{font-weight:600;display:block;margin-bottom:6px;}
+  select,input[type=text],textarea{
+    font-family:inherit;font-size:.95rem;width:100%;padding:10px 12px;
+    border:1.6px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);
+  }
+  select:focus,input:focus,textarea:focus{outline:none;border-color:var(--purple-light);}
+  textarea{resize:vertical;min-height:140px;}
+  .wordbank{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 6px;}
+  .chip{background:var(--lilac-mid);color:var(--purple-dark);font-weight:600;
+    font-size:.84rem;padding:5px 11px;border-radius:20px;}
+
+  .feedback{margin-top:14px;padding:13px 15px;border-radius:11px;font-size:.92rem;display:none;}
+  .feedback.show{display:block;}
+  .feedback.ok{background:#e5f6ec;color:#176b3d;border:1px solid #b6e2c6;}
+  .feedback.no{background:#fbe7e7;color:#9c2b2b;border:1px solid #f0bcbc;}
+  .feedback.info{background:var(--lilac);color:var(--purple-dark);border:1px solid var(--line);}
+
+  .btn{background:var(--purple);color:#fff;border:none;border-radius:12px;
+    padding:13px 26px;font-size:1rem;font-weight:700;cursor:pointer;
+    transition:.18s;font-family:inherit;margin-top:18px;}
+  .btn:hover{background:var(--purple-dark);transform:translateY(-1px);}
+  .btn.ghost{background:var(--lilac-mid);color:var(--purple-dark);}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap;}
+
+  .speak-box{background:var(--lilac);border-radius:14px;padding:18px;margin:14px 0;}
+  .timer{font-size:2.1rem;font-weight:800;color:var(--purple-dark);text-align:center;margin:6px 0;}
+  .mic-status{text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:8px;}
+  .transcript{background:#fff;border:1.4px dashed var(--line);border-radius:10px;
+    padding:11px 13px;min-height:62px;font-size:.92rem;color:var(--ink);margin-top:10px;}
+  .pulse{display:inline-block;width:11px;height:11px;border-radius:50%;
+    background:var(--bad);margin-right:6px;animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+  .scorebig{font-size:3rem;font-weight:800;color:var(--purple-dark);text-align:center;}
+  .scoreline{text-align:center;color:var(--muted);margin-bottom:18px;}
+  .breakdown{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0;}
+  .breakdown div{display:flex;justify-content:space-between;padding:10px 15px;
+    border-bottom:1px solid var(--line);font-size:.93rem;}
+  .breakdown div:last-child{border-bottom:none;font-weight:700;background:var(--lilac);}
+
+  .checklist{font-size:.88rem;color:var(--muted);margin:8px 0 0;padding-left:18px;}
+  .checklist li{margin:3px 0;}
+  .success{background:#e5f6ec;border:1px solid #b6e2c6;color:#176b3d;
+    border-radius:12px;padding:16px;text-align:center;font-weight:600;display:none;margin-top:16px;}
+  .success.show{display:block;}
+  .tip{font-size:.86rem;color:var(--muted);font-style:italic;margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ============ CONFIG ============ -->
+<script>
+const CONFIG = {
+  FORM_URL: "https://docs.google.com/forms/d/e/1FAIpQLSftntztcKJlKFeJTtu7CiHniOUFFfGBmRhclyzqz7CGUMwkPQ/formResponse",
+  ENTRY: {
+    studentName:  "entry.154629934",
+    classCode:    "entry.771629595",
+    session:      "entry.1564061356",
+    listening:    "entry.1994438750",
+    vocab:        "entry.1169985852",
+    writing:      "entry.66378887",
+    speaking:     "entry.665897330",
+    grammar:      "entry.1528226896",
+    percent:      "entry.543147037",
+    writingText:  "entry.301386877",
+    aiFeedback:   "entry.1035810181",
+    teacher:      "entry.1451249480"
+  },
+  CLASSES: [
+    {code:"3096", label:"3096 \u2014 Morning (9:00 \u2013 10:30 AM) \u2014 Laura Ebel",   teacher:"Laura Ebel"},
+    {code:"3091", label:"3091 \u2014 Evening (6:30 \u2013 8:00 PM) \u2014 Laura Ebel",   teacher:"Laura Ebel"}
+  ],
+  SESSION_LABEL: "Week 4 - Class 7"
+};
+</script>
+
+<div class="card">
+
+<!-- ===================== SCREEN 0 — START ===================== -->
+<div class="screen active" id="s0">
+  <div class="brand">English Class · SQA Education</div>
+  <h1>Mastering Workplace Clarity</h1>
+  <div class="sub">Conversation Course · Week 4 · Class 7<br>
+  <strong>Accountability · Discourse Markers</strong></div>
+
+  <div class="passage" style="border-left-color:var(--gold);">
+    <h3>Here's the plan 👋</h3>
+    <p>Five short sections. Today you'll read a tense manager-employee exchange about a
+    missed posting schedule, then practice the vocabulary of workplace problems and the
+    <strong>discourse markers</strong> that steer a difficult conversation —
+    <em>to clarify</em>, <em>with respect to</em>, <em>that being said</em>, <em>moving forward</em>.
+    The big section is <strong>speaking</strong> — you'll perform both sides of a workplace
+    conversation.</p>
+    <p>Work at your own pace. Nothing submits until you press Finish.</p>
+  </div>
+
+  <div class="gap">
+    <label>First, your name</label>
+    <input type="text" id="studentName" placeholder="Type your full name">
+  </div>
+  <div class="gap">
+    <label>Your class</label>
+    <select id="classSelect"></select>
+  </div>
+  <button class="btn" onclick="go(1)">Start →</button>
+</div>
+
+<!-- ===================== SCREEN 1 — READING ===================== -->
+<div class="screen" id="s1">
+  <div class="progress"><span class="now"></span><span></span><span></span><span></span><span></span></div>
+  <h2><span class="tag">1 · Read</span> Reading Comprehension</h2>
+  <div class="intro-note">Read the dialogue between a manager (Marcus) and an employee (Elena), then answer the questions.</div>
+
+  <div class="passage">
+    <div class="dateline">Recorded Zoom catch-up</div>
+    <h3>Reviewing the department analytics</h3>
+    <p><strong>Marcus:</strong> Elena, I'm looking at our social media engagement numbers for the new
+    campaign. They dropped by 15% this week. I thought you were managing the daily posting schedule
+    tightly. If we lose traction now, the client might pull our funding.</p>
+    <p><strong>Elena:</strong> I understand the urgency, Marcus. <em>With respect to</em> the posting
+    schedule, there seems to be a slight <strong>misconception</strong> about what caused that drop.</p>
+    <p><strong>Marcus:</strong> Well, the data shows three days with zero posts. Did you miss those days?
+    We can't afford an <strong>oversight</strong> like that when we are trying to scale.</p>
+    <p><strong>Elena:</strong> <em>That being said</em>, I did not miss any days. <em>To clarify</em>, the
+    scheduling platform suffered a technical outage on Monday morning. I noticed the platform was offline
+    and immediately switched to a manual backup system, but our automated posts for Tuesday and Wednesday
+    were wiped out by the system error before I could intervene.</p>
+    <p><strong>Marcus:</strong> Ah, I see. I didn't get any alert about a platform outage.</p>
+    <p><strong>Elena:</strong> I should have flagged the system crash to you immediately via Slack to
+    prevent this confusion, so I take responsibility for that communication gap. <em>Moving forward</em>,
+    I will post an immediate alert in our team channel if a third-party tool fails so everyone is aligned.</p>
+  </div>
+
+  <div id="readingQs"></div>
+  <button class="btn" onclick="go(2)">Next: Vocabulary →</button>
+</div>
+
+<!-- ===================== SCREEN 2 — VOCABULARY ===================== -->
+<div class="screen" id="s2">
+  <div class="progress"><span class="done"></span><span class="now"></span><span></span><span></span><span></span></div>
+  <h2><span class="tag">2 · Vocabulary</span> When Things Go Wrong at Work</h2>
+  <div class="intro-note">Choose the correct vocabulary word from the box for each sentence. Each word is used <strong>only once</strong>.</div>
+
+  <div class="wordbank" id="wordbank"></div>
+  <div id="vocabQs"></div>
+  <button class="btn" onclick="go(3)">Next: Writing →</button>
+</div>
+
+<!-- ===================== SCREEN 3 — WRITING ===================== -->
+<div class="screen" id="s3">
+  <div class="progress"><span class="done"></span><span class="done"></span><span class="now"></span><span></span><span></span></div>
+  <h2><span class="tag">3 · Write</span> The Missing File</h2>
+  <div class="intro-note">Write a short dialogue (<strong>6–8 sentences</strong>) based on the scenario below.</div>
+
+  <div class="passage">
+    <p>📁 <strong>The scenario:</strong> A coworker thinks you deleted a shared project file from
+    Google Drive. In reality, you simply moved it into a new folder called &ldquo;Archive&rdquo; to keep
+    the drive organized, but you forgot to tell them.</p>
+    <p>💬 <strong>Your markers:</strong> <em>To clarify&hellip;</em> ·
+    <em>With respect to&hellip;</em> · <em>That being said&hellip;</em> ·
+    <em>Moving forward&hellip;</em></p>
+  </div>
+
+  <textarea id="writingText" placeholder="Coworker: Did you delete the Q3 project file? It's gone from the drive.&#10;You: To clarify, I didn't delete anything — &hellip;"></textarea>
+  <ul class="checklist">
+    <li>A dialogue of 6–8 sentences</li>
+    <li>At least 2 discourse markers</li>
+    <li>At least 2 vocabulary words from this week's list</li>
+    <li>Take responsibility for the communication gap</li>
+  </ul>
+  <div class="feedback info" id="writingFb"></div>
+  <button class="btn" onclick="checkWriting()">Check my writing</button>
+  <button class="btn ghost" id="writingNext" style="display:none;" onclick="go(4)">Next: Speaking →</button>
+</div>
+
+<!-- ===================== SCREEN 4 — SPEAKING ===================== -->
+<div class="screen" id="s4">
+  <div class="progress"><span class="done"></span><span class="done"></span><span class="done"></span><span class="now"></span><span></span></div>
+  <h2><span class="tag">4 · Speak ⭐</span> Play Both Roles</h2>
+  <div class="intro-note">Prepare and record a dialogue where you play <strong>both roles</strong> — the Boss and the Employee. <strong>The scenario:</strong> the Boss logs into a virtual meeting upset because a client called saying they haven't received their weekly project update. The Employee actually sent the update by direct WhatsApp message, as the client had requested, rather than through the standard company email system. Use at least <strong>two discourse markers</strong> and <strong>two vocabulary words</strong>, and change your voice tone slightly when you switch between the Boss and the Employee.</div>
+
+  <div class="speak-box">
+    <div class="timer" id="timer">0:00</div>
+    <div class="mic-status" id="micStatus">Tap the button and start speaking.</div>
+    <div class="btnrow" style="justify-content:center;">
+      <button class="btn" id="recBtn" style="margin-top:6px;" onclick="toggleRec()">🎤 Start speaking</button>
+    </div>
+    <div class="transcript" id="transcript">Your words will appear here…</div>
+  </div>
+  <div class="tip">Tip: if the microphone doesn't start, allow mic access in your
+  browser, or just keep going — your "Finish" button still works.</div>
+  <div class="feedback info" id="speakFb"></div>
+  <button class="btn" onclick="go(5)">Next: Language in Use →</button>
+</div>
+
+<!-- ===================== SCREEN 5 — LANGUAGE IN USE ===================== -->
+<div class="screen" id="s5">
+  <div class="progress"><span class="done"></span><span class="done"></span><span class="done"></span><span class="done"></span><span class="now"></span></div>
+  <h2><span class="tag">5 · Language</span> Discourse Markers: Choose the Best Fit</h2>
+  <div class="intro-note">Read each mini-dialogue and choose the <strong>best</strong> discourse marker for the professional context.</div>
+
+  <div id="luQs"></div>
+  <button class="btn" onclick="finish()">See my results &amp; finish →</button>
+</div>
+
+<!-- ===================== SCREEN 6 — RESULTS ===================== -->
+<div class="screen" id="s6">
+  <div class="brand">English Class · SQA Education</div>
+  <h1 style="margin-bottom:14px;">Nice work! 🎉</h1>
+  <div class="scorebig" id="finalPct">0%</div>
+  <div class="scoreline" id="finalLine">—</div>
+  <div class="breakdown" id="breakdown"></div>
+  <div style="background:var(--lilac);border:1px solid var(--line);border-radius:11px;
+       padding:12px 15px;font-size:.88rem;color:var(--purple-dark);margin:4px 0 8px;">
+    ℹ️ This score shows the <strong>75 auto-graded points</strong> (reading,
+    vocabulary, speaking, language). Your <strong>writing is worth 25 more points</strong>
+    and will be graded by your teacher — so your final mark will be higher than the number above.
+  </div>
+  <p style="font-size:.9rem;color:var(--muted);">Your answers, writing, and spoken
+  story are recorded below. Press Finish to send everything to your teacher.</p>
+  <button class="btn" id="finishBtn" onclick="submitAll()">Finish →</button>
+  <div class="success" id="successMsg">✓ Sent! Your homework is complete. You can close this page.</div>
+</div>
+
+</div>
+<div style="text-align:center;color:var(--muted);font-size:.8rem;margin-top:16px;">
+  SQA Education · Conversation Course · Term IV 2026
+</div>
+</div>
+
+<iframe name="sqa_sink" style="display:none;"></iframe>
+
+<script>
+/* ---------- content banks ---------- */
+const READING_LABEL="Reading comprehension";
+const SPEAKING_LABEL="Speaking \u2014 both roles \u2b50";
+const LU_LABEL="Discourse markers";
+const SPEAK_TARGET=60;
+const SPEAK_TIER2=40;
+const SPEAK_TIER3=20;
+const LESSON_WORDS=["oversight", "ambiguous", "discrepancy", "proactive", "rectify", "misalignment", "bottleneck", "to clarify", "with respect to", "that being said", "moving forward", "misconception", "responsibility"];
+const readingBank=[
+ {
+  "q": "1. What is the primary cause of the drop in social media engagement?",
+  "opts": [
+   "Elena forgot to create the content for Tuesday and Wednesday.",
+   "The client pulled the funding for the campaign unexpectedly.",
+   "A technical failure on the scheduling platform deleted scheduled posts.",
+   "Marcus changed the posting schedule without telling Elena."
+  ],
+  "answer": 2
+ },
+ {
+  "q": "2. Why does Elena say, &ldquo;I should have flagged the system crash to you immediately&rdquo;?",
+  "opts": [
+   "To ask Marcus to fix the technical platform error for her.",
+   "To take accountability for the lack of communication about the outage.",
+   "To complain about the poor quality of the backup system.",
+   "To argue that the 15% drop in data was actually Marcus's fault."
+  ],
+  "answer": 1
+ },
+ {
+  "q": "3. Based on the dialogue, what can be inferred about Marcus's management style when a problem arises?",
+  "opts": [
+   "He prefers to wait several weeks to see if data improves before taking action.",
+   "He focuses heavily on immediate data outcomes and may assume employee error before knowing the facts.",
+   "He is highly knowledgeable about the technical backend of scheduling platforms.",
+   "He dislikes using discourse markers and prefers very long, informal casual conversations."
+  ],
+  "answer": 1
+ },
+ {
+  "q": "4. What does the dialogue imply about Elena's professional character?",
+  "opts": [
+   "She is passive and prefers to let her manager solve technical bugs.",
+   "She gets highly emotional and defensive when criticized by supervisors.",
+   "She is a proactive problem-solver who values taking professional accountability.",
+   "She frequently misses deadlines because she is overwhelmed with work."
+  ],
+  "answer": 2
+ },
+ {
+  "q": "5. What is the purpose of Elena using the discourse marker &ldquo;Moving forward&hellip;&rdquo; at the end of her turn?",
+  "opts": [
+   "To change the subject to a completely different marketing client.",
+   "To point out that Marcus made a mistake by checking the analytics too early.",
+   "To transition the conversation away from the mistake and toward a future solution.",
+   "To show that she is planning to quit her job due to the software issues."
+  ],
+  "answer": 2
+ }
+];
+const vocabWords=["ambiguous", "bottleneck", "discrepancy", "misalignment", "oversight", "proactive", "rectify"];
+const vocabBank=[
+ {
+  "s": "There is a huge financial ___ between the invoice you sent me and the actual amount listed in our contract; the numbers do not match at all.",
+  "a": "discrepancy"
+ },
+ {
+  "s": "The instructions in the training manual were incredibly ___, leaving the new hires completely confused about who was responsible for closing the office.",
+  "a": "ambiguous"
+ },
+ {
+  "s": "Forgetting to attach the presentation slides to the client email was a total ___, as I normally double-check all my attachments before clicking send.",
+  "a": "oversight"
+ },
+ {
+  "s": "Because the approval process requires signatures from three different directors, it creates a major ___ that delays our projects by several weeks.",
+  "a": "bottleneck"
+ },
+ {
+  "s": "Instead of waiting for a crisis to happen, a ___ employee identifies potential software bugs and fixes them before they affect the user.",
+  "a": "proactive"
+ },
+ {
+  "s": "The IT department is working late tonight to ___ the server error so that all employees can log back into their accounts by tomorrow morning.",
+  "a": "rectify"
+ },
+ {
+  "s": "The delay occurred because of a strategic ___ between the sales team and the product team regarding the target audience for the launch.",
+  "a": "misalignment"
+ }
+];
+const luBank=[
+ {
+  "q": "1. <strong>Manager:</strong> &ldquo;Why hasn't the quarterly budget been approved yet?&rdquo;<br><strong>Employee:</strong> &ldquo;______, the finance director has been out sick all week, so the documents are still sitting on her desk.&rdquo;",
+  "opts": [
+   "Moving forward",
+   "Actually",
+   "With respect to",
+   "Having said that"
+  ],
+  "answer": 1
+ },
+ {
+  "q": "2. <strong>Supervisor:</strong> &ldquo;We cannot afford any more mistakes on these client accounts.&rdquo;<br><strong>Employee:</strong> &ldquo;I completely agree. ______, I have created a double-verification checklist that the team will use for every account starting tomorrow morning.&rdquo;",
+  "opts": [
+   "Regarding",
+   "That being said",
+   "Moving forward",
+   "To set the record straight"
+  ],
+  "answer": 2
+ },
+ {
+  "q": "3. <strong>Coworker A:</strong> &ldquo;I'm really worried about the new software update causing bugs.&rdquo;<br><strong>Coworker B:</strong> &ldquo;I understand your fear. ______, our beta testing showed zero errors, so the risk is actually very low.&rdquo;",
+  "opts": [
+   "With respect to",
+   "That being said",
+   "Regarding",
+   "In actual fact"
+  ],
+  "answer": 1
+ },
+ {
+  "q": "4. <strong>Director:</strong> &ldquo;Let's discuss the hiring delays in the engineering department.&rdquo;<br><strong>HR Manager:</strong> &ldquo;______ the engineering roles, we have received fifty applications but only three candidates have the required coding certifications.&rdquo;",
+  "opts": [
+   "With respect to",
+   "Moving forward",
+   "To clarify",
+   "That being said"
+  ],
+  "answer": 0
+ }
+];
+
+/* ---------- state ---------- */
+const STATE={reading:0,vocab:0,writing:0,speaking:0,lu:0,
+  writingText:"",spokenText:"",speakSecs:0};
+const MAX={reading:20,vocab:20,writing:0,speaking:25,lu:10};
+const TOTAL=100;
+
+/* ---------- class sections ---------- */
+(function(){
+  const sel=document.getElementById('classSelect');
+  CONFIG.CLASSES.forEach((c,i)=>{
+    const o=document.createElement('option');
+    o.value=i;o.textContent=c.label;sel.appendChild(o);
+  });
+})();
+
+/* ---------- navigation ---------- */
+function go(n){
+  if(n===1){
+    const nm=document.getElementById('studentName').value.trim();
+    if(!nm){alert('Please type your name first.');return;}
+  }
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s'+n).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ===================== SECTION 1 — READING ===================== */
+(function(){
+  const c=document.getElementById('readingQs');
+  readingBank.forEach((item,i)=>{
+    const d=document.createElement('div');d.className='q';
+    let h='<div class="qtext">'+item.q+'</div>';
+    item.opts.forEach((o,j)=>{
+      h+='<label class="opt" data-q="'+i+'"><input type="radio" name="r'+i+'" value="'+j+'">'+o+'</label>';
+    });
+    d.innerHTML=h;c.appendChild(d);
+  });
+  c.querySelectorAll('.opt').forEach(opt=>{
+    opt.addEventListener('click',()=>{
+      const qi=opt.dataset.q;
+      c.querySelectorAll('.opt[data-q="'+qi+'"]').forEach(o=>o.classList.remove('sel'));
+      opt.classList.add('sel');opt.querySelector('input').checked=true;
+    });
+  });
+})();
+function scoreReading(){
+  let correct=0;
+  readingBank.forEach((item,i)=>{
+    const sel=document.querySelector('input[name="r'+i+'"]:checked');
+    const wrap=document.querySelectorAll('#readingQs .q')[i];
+    if(sel){
+      const val=+sel.value;
+      wrap.querySelectorAll('.opt')[item.answer].classList.add('correct');
+      if(val===item.answer)correct++;
+      else wrap.querySelectorAll('.opt')[val].classList.add('wrong');
+    }
+  });
+  STATE.reading=Math.round(correct/readingBank.length*MAX.reading);
+}
+
+/* ===================== SECTION 2 — VOCABULARY ===================== */
+(function(){
+  const wb=document.getElementById('wordbank');
+  vocabWords.forEach(w=>{const c=document.createElement('span');c.className='chip';c.textContent=w;wb.appendChild(c);});
+  const c=document.getElementById('vocabQs');
+  vocabBank.forEach((item,i)=>{
+    const d=document.createElement('div');d.className='gap';
+    let opts='<option value="">— choose —</option>';
+    vocabWords.forEach(w=>{opts+='<option value="'+w+'">'+w+'</option>';});
+    d.innerHTML='<label>'+(i+1)+'. '+item.s+'</label><select id="v'+i+'">'+opts+'</select>';
+    c.appendChild(d);
+  });
+})();
+function scoreVocab(){
+  let correct=0;
+  vocabBank.forEach((item,i)=>{
+    const v=document.getElementById('v'+i).value;
+    if(v && v.toLowerCase()===item.a.toLowerCase())correct++;
+  });
+  STATE.vocab=Math.round(correct/vocabBank.length*MAX.vocab);
+}
+
+/* ===================== SECTION 3 — WRITING (teacher-graded) ===================== */
+function checkWriting(){
+  const txt=document.getElementById('writingText').value.trim();
+  STATE.writingText=txt;
+  const fb=document.getElementById('writingFb');
+  const words=txt.split(/\s+/).filter(Boolean);
+  const sentences=txt.split(/[.!?]+/).map(s=>s.trim()).filter(Boolean);
+  let msg='<strong>Saved \u2014 your teacher will read and grade this.</strong><br>';
+  msg+='\ud83d\udcdd '+words.length+' words \u00b7 '+sentences.length+' sentences';
+  if(words.length<15)msg+='<br>\ud83d\udca1 This looks short \u2014 try to write a bit more before moving on.';
+  fb.innerHTML=msg;fb.className='feedback show info';
+  document.getElementById('writingNext').style.display='inline-block';
+}
+
+/* ===================== SECTION 4 — SPEAKING ===================== */
+let recognition=null,recording=false,timerInt=null,secs=0;
+function fmt(s){return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
+function toggleRec(){recording?stopRec():startRec();}
+function startRec(){
+  secs=0;document.getElementById('timer').textContent='0:00';
+  STATE.spokenText='';
+  const tEl=document.getElementById('transcript');
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=null;
+  if(SR){
+    try{
+      recognition=new SR();
+      recognition.continuous=true;
+      recognition.interimResults=true;
+      recognition.lang='en-US';
+      let finalT='';
+      const norm=x=>x.toLowerCase().replace(/\s+/g,' ').trim();
+      recognition.onresult=e=>{
+        let interim='';
+        for(let i=e.resultIndex;i<e.results.length;i++){
+          const t=e.results[i][0].transcript;
+          if(e.results[i].isFinal){
+            const tt=t.trim(), ft=finalT.trim();
+            if(!tt)continue;
+            /* Android Chrome marks each growing interim hypothesis as final:
+               if the new final extends everything so far, replace instead of append */
+            if(ft&&norm(tt).indexOf(norm(ft))===0){finalT=tt+' ';}
+            else if(ft&&norm(ft).indexOf(norm(tt))===0){/* duplicate/subset: skip */}
+            else{finalT+=tt+' ';}
+          } else interim+=t;
+        }
+        STATE.spokenText=(finalT+interim).trim();
+        tEl.textContent=STATE.spokenText||'Listening…';
+      };
+      recognition.onerror=ev=>{
+        if(ev.error==='not-allowed'||ev.error==='service-not-allowed'){
+          document.getElementById('micStatus').textContent=
+            'Microphone blocked. Allow mic access in your browser, then tap Start again.';
+        } else if(ev.error==='no-speech'){
+          /* harmless on Safari — ignore */
+        } else {
+          document.getElementById('micStatus').textContent=
+            'Speech capture paused — keep speaking out loud, your time still counts.';
+        }
+      };
+      recognition.onend=()=>{
+        if(recording){try{recognition.start();}catch(e){}}
+      };
+      recognition.start();
+    }catch(e){
+      recognition=null;
+      document.getElementById('micStatus').textContent=
+        'Speech capture unavailable here — speak out loud, then press Next.';
+    }
+  } else {
+    document.getElementById('micStatus').textContent=
+      'This browser can\u2019t transcribe speech — speak out loud, then press Next.';
+  }
+  recording=true;
+  document.getElementById('recBtn').textContent='\u23f9 Stop';
+  document.getElementById('micStatus').innerHTML='<span class="pulse"></span>Recording \u2014 read your dialogue!';
+  timerInt=setInterval(()=>{secs++;document.getElementById('timer').textContent=fmt(secs);},1000);
+}
+function stopRec(){
+  recording=false;
+  if(recognition){try{recognition.onend=null;recognition.stop();}catch(e){}}
+  clearInterval(timerInt);
+  STATE.speakSecs=secs;
+  document.getElementById('recBtn').textContent='\ud83c\udfa4 Speak again';
+  document.getElementById('micStatus').textContent='Stopped. You can speak again or move on.';
+  scoreSpeaking();
+}
+function scoreSpeaking(){
+  const txt=(STATE.spokenText||'').trim();
+  const words=txt.split(/\s+/).filter(Boolean);
+  const low=txt.toLowerCase();
+  const fb=document.getElementById('speakFb');
+  let score=0;
+  const isReal=words.length>=6;
+  if(isReal){
+    if(STATE.speakSecs>=SPEAK_TARGET)score+=12;
+    else if(STATE.speakSecs>=SPEAK_TIER2)score+=9;
+    else if(STATE.speakSecs>=SPEAK_TIER3)score+=6;
+    else score+=3;
+    if(words.length>=60)score+=7;
+    else if(words.length>=30)score+=5;
+    else if(words.length>=12)score+=3;
+    else score+=1;
+    const hits=[...new Set(LESSON_WORDS.filter(w=>low.includes(w)))];
+    score+=Math.min(hits.length,3)*2;
+  }
+  score=Math.min(score,MAX.speaking);
+  STATE.speaking=score;
+  let msg='<strong>'+(isReal?'Great — '+score+'/'+MAX.speaking+' points.':'Speak a little more to score points — but you can still continue.')+'</strong><br>';
+  msg+='🎙️ '+STATE.speakSecs+' seconds · '+words.length+' words spoken';
+  fb.innerHTML=msg;fb.className='feedback show '+(score>=15?'ok':'info');
+}
+
+/* ===================== SECTION 5 — LANGUAGE IN USE ===================== */
+(function(){
+  const c=document.getElementById('luQs');
+  luBank.forEach((item,i)=>{
+    const d=document.createElement('div');d.className='q';
+    let h='<div class="qtext">'+item.q+'</div>';
+    item.opts.forEach((o,j)=>{
+      const letter=String.fromCharCode(65+j);
+      h+='<label class="opt" data-q="'+i+'"><input type="radio" name="lu'+i+'" value="'+j+'"><strong>'+letter+')</strong> '+o+'</label>';
+    });
+    d.innerHTML=h;c.appendChild(d);
+  });
+  c.querySelectorAll('.opt').forEach(opt=>{
+    opt.addEventListener('click',()=>{
+      const qi=opt.dataset.q;
+      c.querySelectorAll('.opt[data-q="'+qi+'"]').forEach(o=>o.classList.remove('sel'));
+      opt.classList.add('sel');opt.querySelector('input').checked=true;
+    });
+  });
+})();
+function scoreLU(){
+  let correct=0;
+  luBank.forEach((item,i)=>{
+    const sel=document.querySelector('input[name="lu'+i+'"]:checked');
+    const wrap=document.querySelectorAll('#luQs .q')[i];
+    if(sel){
+      const val=+sel.value;
+      wrap.querySelectorAll('.opt')[item.answer].classList.add('correct');
+      if(val===item.answer)correct++;
+      else wrap.querySelectorAll('.opt')[val].classList.add('wrong');
+    }
+  });
+  STATE.lu=Math.round(correct/luBank.length*MAX.lu);
+}
+
+/* ===================== RESULTS ===================== */
+function finish(){
+  scoreReading();scoreVocab();scoreLU();
+  if(!STATE.writingText)STATE.writingText=document.getElementById('writingText').value.trim();
+  const pct=Math.round(
+    (STATE.reading+STATE.vocab+STATE.writing+STATE.speaking+STATE.lu)/TOTAL*100);
+  document.getElementById('finalPct').textContent=pct+'%';
+  document.getElementById('finalLine').textContent=
+    (pct>=75?'Top marks on the auto-graded sections!':pct>=50?'Good effort — keep practicing!':'Completed!');
+  const bd=document.getElementById('breakdown');
+  bd.innerHTML=
+    row(READING_LABEL,STATE.reading,MAX.reading)+
+    row('Vocabulary',STATE.vocab,MAX.vocab)+
+    writingRow()+
+    row(SPEAKING_LABEL,STATE.speaking,MAX.speaking)+
+    row(LU_LABEL,STATE.lu,MAX.lu)+
+    row('Total',STATE.reading+STATE.vocab+STATE.writing+STATE.speaking+STATE.lu,TOTAL);
+  go(6);
+}
+function row(label,got,max){
+  return '<div><span>'+label+'</span><span>'+got+' / '+max+'</span></div>';
+}
+function writingRow(){
+  return '<div><span>Writing</span><span style="color:var(--purple-light);">graded by teacher</span></div>';
+}
+
+/* ===================== SILENT SUBMIT ===================== */
+function submitAll(){
+  const pct=Math.round(
+    (STATE.reading+STATE.vocab+STATE.writing+STATE.speaking+STATE.lu)/TOTAL*100);
+  const E=CONFIG.ENTRY;
+  const data={};
+  const chosen=CONFIG.CLASSES[+document.getElementById('classSelect').value]||CONFIG.CLASSES[0];
+  data[E.studentName]=document.getElementById('studentName').value.trim();
+  data[E.classCode]=chosen.code;
+  data[E.session]=CONFIG.SESSION_LABEL;
+  data[E.listening]=STATE.reading;
+  data[E.vocab]=STATE.vocab;
+  data[E.writing]="";
+  data[E.speaking]=STATE.speaking;
+  data[E.grammar]=STATE.lu;
+  data[E.percent]=pct;
+  data[E.writingText]=STATE.writingText||'(none)';
+  data[E.aiFeedback]=STATE.spokenText||'';
+  data[E.teacher]=chosen.teacher;
+
+  const f=document.createElement('form');
+  f.action=CONFIG.FORM_URL;f.method='POST';f.target='sqa_sink';
+  for(const k in data){
+    const inp=document.createElement('input');
+    inp.type='hidden';inp.name=k;inp.value=data[k];f.appendChild(inp);
+  }
+  document.body.appendChild(f);
+  try{f.submit();}catch(e){}
+  document.getElementById('finishBtn').style.display='none';
+  document.getElementById('successMsg').classList.add('show');
+  window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
